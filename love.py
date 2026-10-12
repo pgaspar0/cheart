@@ -83,7 +83,7 @@ COLOR_THEMES = [
 s = t.Screen()
 s.setup(800, 800)
 s.bgcolor(BG)
-s.title("Motivação - Célia T.")
+s.title("Consegui!")
 s.tracer(0)
 
 cv = s.getcanvas()
@@ -492,7 +492,12 @@ def show_menu():
         text="Dica: Use o mouse para clicar ou as teclas 1 a 6",
         font=(FONT, 10, "italic"), fill="#5D5469"
     )
-    menu_items.append(tip_txt)
+    credit_txt = cv.create_text(
+        0, 275,
+        text="Motivação, Célia T.",
+        font=(FONT, 9, "italic"), fill="#382C42"
+    )
+    menu_items.extend([tip_txt, credit_txt])
 
 
 def setup_bindings():
@@ -521,6 +526,7 @@ def print_cli_menu():
             print(f" {i}. {t_info['name']}")
     print("=" * 55)
     print("Selecione clicando na janela ou digitando 1-6.")
+    print("Motivação, Célia T.")
     print("=" * 55)
 
 

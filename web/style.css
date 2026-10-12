@@ -202,6 +202,33 @@ body {
   border-color: #443555;
 }
 
+.discreet-credit {
+  font-size: 10px;
+  font-style: italic;
+  color: #483a54;
+  margin-top: 12px;
+  text-align: center;
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.discreet-credit:hover {
+  color: #7b678e;
+}
+
+.heart-credit {
+  position: absolute;
+  bottom: 14px;
+  right: 18px;
+  font-size: 10px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.3px;
+  user-select: none;
+  pointer-events: none;
+  z-index: 10;
+}
+
 @media (max-width: 600px) {
   .menu-title {
     font-size: 16px;
@@ -222,5 +249,8 @@ body {
   }
   .card-texts {
     margin-left: 14px;
+  }
+  .card-name {
+    font-size: 11.5px;
   }
 }

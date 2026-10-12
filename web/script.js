@@ -40,7 +40,7 @@ const COLOR_THEMES = [
   {
     id: "azul_bebe",
     name: "Azul bebê",
-    subtitle: "azul bebe pq fica bem em bebes",
+    subtitle: "Azul bebê pq fica bem em bebês",
     inner: [0.35, 0.60, 0.85],
     outer: [0.55, 0.78, 0.96],
     edge: [0.75, 0.90, 1.00],
@@ -59,7 +59,7 @@ const COLOR_THEMES = [
   },
   {
     id: "leite",
-    name: "Leite",
+    name: "Leite (sim, é diferente da cor de noiva)",
     subtitle: "",
     inner: [0.78, 0.80, 0.82],
     outer: [0.92, 0.94, 0.95],
@@ -70,7 +70,7 @@ const COLOR_THEMES = [
   {
     id: "turquesa",
     name: "Turquesa",
-    subtitle: "turquesa, esta mais para verde",
+    subtitle: "Turquesa, está mais para verde",
     inner: [0.04, 0.52, 0.40],
     outer: [0.08, 0.76, 0.56],
     edge: [0.20, 0.92, 0.68],
