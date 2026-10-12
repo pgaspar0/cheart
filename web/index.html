@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Love Heart</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Menu de Seleção de Cor -->
+    <div id="menu-screen" class="screen">
+      <div class="menu-header">
+        <h1 class="menu-title">ESCOLHA A COR DO CORAÇÃO</h1>
+        <p class="menu-subtitle">Clique numa opção ou pressione a tecla (1 - 6)</p>
+      </div>
+
+      <div class="cards-container" id="cards-container">
+        <!-- Gerado via JavaScript ou estático -->
+      </div>
+
+      <p class="menu-tip">Dica: Use o mouse para clicar ou as teclas 1 a 6</p>
+    </div>
+
+    <!-- Tela do Coração Animado -->
+    <div id="heart-screen" class="screen hidden">
+      <canvas id="heartCanvas" width="800" height="800"></canvas>
+      <button id="btn-back" class="btn-back" title="Escolher outra cor">← Trocar Cor</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
