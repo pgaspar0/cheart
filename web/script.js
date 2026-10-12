@@ -87,6 +87,19 @@ const PHRASES = [
   "ฉันรักเธอ", "Anh yêu em", "Aku cinta kamu", "Я тебе кохаю",
 ];
 
+const CHERRY_PHRASES = [
+  "I love you", "Te amo", "Je t'aime", "Ich liebe dich",
+  "Ti amo", "Eu te amo", "Я тебя люблю", "사랑해",
+  "愛してる", "我爱你", "Σ' αγαπώ", "Ik hou van jou",
+  "Jag älskar dig", "Kocham cię", "Anh yêu em", "Seni seviyorum",
+  "Face it, Tiger...",
+  "You just hit the jackpot",
+  "Pardonne-tu",
+  "Queres muito me ser",
+  "Estou bem acordada",
+  "Patavinas",
+];
+
 // Gerador pseudo-aleatório com semente (Mulberry32)
 class PRNG {
   constructor(seed = 11) {
@@ -204,9 +217,10 @@ function measureWidth(text, size) {
 // Algoritmo de distribuição das frases no coração
 function buildPlaced(theme) {
   const rng = new PRNG(11);
+  const phrasePool = (theme.id === "cherry") ? CHERRY_PHRASES : PHRASES;
   function* phraseCycle() {
     while (true) {
-      const order = [...PHRASES];
+      const order = [...phrasePool];
       rng.shuffle(order);
       for (const phrase of order) yield phrase;
     }
@@ -304,14 +318,315 @@ const canvas = document.getElementById("heartCanvas");
 const ctx = canvas.getContext("2d");
 const btnBack = document.getElementById("btn-back");
 
-// Suporte a monitores High-DPI / Retina
-function setupDpi() {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = 800 * dpr;
-  canvas.height = 800 * dpr;
-  ctx.scale(dpr, dpr);
+// Dimensões responsivas e suporte a monitores High-DPI / Retina
+let screenW = window.innerWidth;
+let screenH = window.innerHeight;
+let dpr = window.devicePixelRatio || 1;
+let fitScale = 1;
+
+function resizeCanvas() {
+  screenW = window.innerWidth;
+  screenH = window.innerHeight;
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(screenW * dpr);
+  canvas.height = Math.round(screenH * dpr);
+
+  // Escala responsiva do coração: aproveita a tela mantendo proporção e margens de respiro
+  const availableW = Math.max(280, screenW - 40);
+  const availableH = Math.max(280, screenH - 60);
+  fitScale = Math.min(1.45, Math.min(availableW / 760, availableH / 760));
 }
-setupDpi();
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+// ===================================================
+// Efeitos Especiais Spider-Man & Mary Jane (Opção Cherry)
+// ===================================================
+
+let webBursts = [];
+let webParticles = [];
+
+function initWebParticles() {
+  webParticles = [];
+  const count = Math.min(60, Math.max(24, Math.round((screenW * screenH) / 28000)));
+  for (let i = 0; i < count; i++) {
+    webParticles.push({
+      x: Math.random() * screenW,
+      y: Math.random() * screenH,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: -0.2 - Math.random() * 0.35,
+      size: 1 + Math.random() * 2,
+      alpha: 0.2 + Math.random() * 0.45,
+      pulse: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
+function updateAndDrawWebParticles(ctx, delta) {
+  ctx.save();
+  for (const p of webParticles) {
+    p.y += p.vy;
+    p.x += p.vx;
+    p.pulse += 0.03;
+    if (p.y < 0) {
+      p.y = screenH;
+      p.x = Math.random() * screenW;
+    }
+    if (p.x < 0) p.x = screenW;
+    if (p.x > screenW) p.x = 0;
+    const currentAlpha = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
+    ctx.fillStyle = `rgba(255, 90, 130, ${currentAlpha})`;
+    ctx.shadowColor = "#de184b";
+    ctx.shadowBlur = 4;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function createWebBurst(x, y) {
+  webBursts.push({
+    x,
+    y,
+    radius: 4,
+    maxRadius: 65,
+    life: 1.0,
+  });
+}
+
+function updateAndDrawWebBursts(ctx, delta) {
+  const next = [];
+  for (const b of webBursts) {
+    b.life -= delta * 0.0016;
+    b.radius += (b.maxRadius - b.radius) * 0.12;
+    if (b.life > 0) {
+      drawSpiderWebBurst(ctx, b.x, b.y, b.radius, b.life);
+      next.push(b);
+    }
+  }
+  webBursts = next;
+}
+
+function drawSpiderWebBurst(ctx, x, y, radius, alpha) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+  ctx.shadowColor = "rgba(222, 24, 75, 0.85)";
+  ctx.shadowBlur = 6;
+  ctx.lineWidth = 1;
+
+  const rays = 8;
+  for (let i = 0; i < rays; i++) {
+    const angle = (i / rays) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+    ctx.stroke();
+  }
+
+  const rings = 3;
+  for (let r = 1; r <= rings; r++) {
+    const rRadius = (r / rings) * radius;
+    ctx.beginPath();
+    for (let i = 0; i < rays; i++) {
+      const a1 = (i / rays) * Math.PI * 2;
+      const a2 = ((i + 1) / rays) * Math.PI * 2;
+      const p1x = Math.cos(a1) * rRadius;
+      const p1y = Math.sin(a1) * rRadius;
+      const p2x = Math.cos(a2) * rRadius;
+      const p2y = Math.sin(a2) * rRadius;
+      const midA = (a1 + a2) / 2;
+      const cpx = Math.cos(midA) * (rRadius * 0.88);
+      const cpy = Math.sin(midA) * (rRadius * 0.88);
+
+      if (i === 0) ctx.moveTo(p1x, p1y);
+      ctx.quadraticCurveTo(cpx, cpy, p2x, p2y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSpiderWebCorner(ctx, x0, y0, radius, raysCount, ringCount, angleStart, angleEnd) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+  ctx.shadowColor = "rgba(222, 24, 75, 0.55)";
+  ctx.shadowBlur = 4;
+  ctx.lineWidth = 1;
+
+  const rayAngles = [];
+  for (let i = 0; i < raysCount; i++) {
+    const angle = angleStart + (i / (raysCount - 1)) * (angleEnd - angleStart);
+    rayAngles.push(angle);
+    const rx = x0 + Math.cos(angle) * radius;
+    const ry = y0 + Math.sin(angle) * radius;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(rx, ry);
+    ctx.stroke();
+  }
+
+  for (let r = 1; r <= ringCount; r++) {
+    const ringRadius = (r / ringCount) * radius;
+    ctx.beginPath();
+    for (let i = 0; i < raysCount - 1; i++) {
+      const a1 = rayAngles[i];
+      const a2 = rayAngles[i + 1];
+      const p1x = x0 + Math.cos(a1) * ringRadius;
+      const p1y = y0 + Math.sin(a1) * ringRadius;
+      const p2x = x0 + Math.cos(a2) * ringRadius;
+      const p2y = y0 + Math.sin(a2) * ringRadius;
+
+      const midAngle = (a1 + a2) / 2;
+      const cpx = x0 + Math.cos(midAngle) * (ringRadius * 0.90);
+      const cpy = y0 + Math.sin(midAngle) * (ringRadius * 0.90);
+
+      if (i === 0) ctx.moveTo(p1x, p1y);
+      ctx.quadraticCurveTo(cpx, cpy, p2x, p2y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSpiderWebs(ctx) {
+  // Apenas no canto superior direito da tela (atrás de onde o Spidey ancora)
+  // Deixa o botão de voltar (top-left) e os créditos (bottom-right) 100% livres de teias
+  const webRadius = Math.min(180, Math.max(120, screenW * 0.12));
+  drawSpiderWebCorner(ctx, screenW, 0, webRadius, 6, 5, Math.PI / 2, Math.PI);
+}
+
+function drawHangingSpidey(ctx, time) {
+  // Posicionado na zona livre do canto superior direito da viewport
+  // Não sobrepõe nenhuma palavra do coração e nem qualquer botão
+  const offsetFromRight = Math.min(110, Math.max(60, screenW * 0.075));
+  const anchorX = screenW - offsetFromRight;
+  const anchorY = 0;
+  const threadLength = Math.min(85, Math.max(52, screenH * 0.08));
+  const swing = 0.045 * Math.sin(time * 0.0018);
+
+  ctx.save();
+  ctx.translate(anchorX, anchorY);
+  ctx.rotate(swing);
+  const spideyScale = Math.min(1.0, Math.max(0.78, screenW / 1200));
+  ctx.scale(spideyScale, spideyScale);
+
+  // Fio de teia de aranha cintilante
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, threadLength);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+  ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
+  ctx.shadowBlur = 3;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  // Desloca para a ponta do fio
+  ctx.translate(0, threadLength);
+
+  // Pernas (para cima segurando o fio)
+  ctx.strokeStyle = "#1b3b6f";
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 0); ctx.lineTo(-6, -16); ctx.lineTo(0, -28);
+  ctx.moveTo(0, 0); ctx.lineTo(6, -16); ctx.lineTo(0, -28);
+  ctx.stroke();
+
+  // Botas vermelhas
+  ctx.strokeStyle = "#de184b";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(-2, -22); ctx.lineTo(0, -28);
+  ctx.moveTo(2, -22); ctx.lineTo(0, -28);
+  ctx.stroke();
+
+  // Tronco (azul nas laterais)
+  ctx.fillStyle = "#1b3b6f";
+  ctx.beginPath();
+  ctx.ellipse(0, 10, 8, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tronco (vermelho no centro)
+  ctx.fillStyle = "#de184b";
+  ctx.beginPath();
+  ctx.ellipse(0, 10, 5.5, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pequena aranha no peito
+  ctx.fillStyle = "#11050a";
+  ctx.beginPath();
+  ctx.ellipse(0, 10, 2, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Braços
+  ctx.strokeStyle = "#de184b";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-5, 6); ctx.lineTo(-12, 14); ctx.lineTo(-7, 20);
+  ctx.moveTo(5, 6); ctx.lineTo(13, 14); ctx.lineTo(8, 20);
+  ctx.stroke();
+
+  // Cabeça (invertida)
+  ctx.save();
+  ctx.translate(0, 25);
+
+  ctx.fillStyle = "#de184b";
+  ctx.shadowColor = "rgba(222, 24, 75, 0.7)";
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 8.5, 10.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Teias na máscara
+  ctx.strokeStyle = "rgba(20, 0, 10, 0.35)";
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(-8, 0); ctx.lineTo(8, 0);
+  ctx.moveTo(0, -10); ctx.lineTo(0, 10);
+  ctx.stroke();
+
+  // Olhos angulados clássicos do Spider-Man
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "#100008";
+  ctx.lineWidth = 1.3;
+
+  // Olho esquerdo
+  ctx.beginPath();
+  ctx.moveTo(-1.5, 1);
+  ctx.lineTo(-6.5, -3);
+  ctx.quadraticCurveTo(-7, 3, -2, 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Olho direito
+  ctx.beginPath();
+  ctx.moveTo(1.5, 1);
+  ctx.lineTo(6.5, -3);
+  ctx.quadraticCurveTo(7, 3, 2, 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Coração pulsando suavemente ao lado do Homem-Aranha
+  const heartPulse = 1 + 0.15 * Math.sin(time * 0.005);
+  ctx.save();
+  ctx.translate(14, 8);
+  ctx.scale(heartPulse, heartPulse);
+  ctx.fillStyle = "#ff2a6d";
+  ctx.shadowColor = "#ff2a6d";
+  ctx.shadowBlur = 6;
+  ctx.font = "bold 9px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("♥", 0, 0);
+  ctx.restore();
+
+  ctx.restore();
+  ctx.restore();
+}
 
 // Gerar os cartões da interface
 function renderMenuCards() {
@@ -319,6 +634,7 @@ function renderMenuCards() {
   COLOR_THEMES.forEach((theme, idx) => {
     const card = document.createElement("div");
     card.className = "theme-card";
+    card.setAttribute("data-theme", theme.id);
     card.style.setProperty("--preview-color", theme.preview);
     card.setAttribute("role", "button");
     card.setAttribute("tabindex", "0");
@@ -330,7 +646,10 @@ function renderMenuCards() {
         <div class="card-name">${theme.name}</div>
         ${theme.subtitle ? `<div class="card-sub">${theme.subtitle}</div>` : ""}
       </div>
-      <div class="card-arrow">›</div>
+      <div class="card-arrow-wrap">
+        ${theme.id === "cherry" ? '<span class="cherry-web-icon">🕸️</span>' : ""}
+        <span class="card-arrow">›</span>
+      </div>
     `;
 
     card.addEventListener("click", () => selectTheme(idx));
@@ -357,9 +676,33 @@ function startHeart(theme) {
   if (animId) cancelAnimationFrame(animId);
   if (shimmerTimer) clearInterval(shimmerTimer);
 
+  resizeCanvas();
+
   currentTheme = theme;
   FLASH = theme.flash;
   rngSpawn = new PRNG(11);
+
+  if (theme.id === "cherry") {
+    initWebParticles();
+    webBursts = [];
+  }
+
+  // Atualiza créditos no canto da tela
+  const heartCreditEl = document.querySelector(".heart-credit");
+  if (heartCreditEl) {
+    if (theme.id === "cherry") {
+      heartCreditEl.innerHTML = `
+        <div class="culinaria-quote">A culinária não é uma ciência exacta, pipoca no jantar é válido.</div>
+        <div>Motivação, Mary Jane</div>
+        <div class="fun-credit">Consegui ahahahahahaha!</div>
+      `;
+    } else {
+      heartCreditEl.innerHTML = `
+        <div>Motivação, Célia T.</div>
+        <div class="fun-credit">Consegui ahahahahahaha!</div>
+      `;
+    }
+  }
 
   placedItems = buildPlaced(theme);
   itemsQueue = [...placedItems];
@@ -399,9 +742,25 @@ function startHeart(theme) {
       }
     }
 
-    // Desenha o fundo
+    // Reset de DPI para a resolução nativa da tela
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Desenha o fundo cobrindo toda a tela
     ctx.fillStyle = BG;
-    ctx.fillRect(0, 0, 800, 800);
+    ctx.fillRect(0, 0, screenW, screenH);
+
+    // Efeitos especiais exclusivos do Homem-Aranha / Mary Jane (Cherry) em tela cheia
+    if (currentTheme && currentTheme.id === "cherry") {
+      drawSpiderWebs(ctx);
+      updateAndDrawWebParticles(ctx, delta);
+      updateAndDrawWebBursts(ctx, delta);
+    }
+
+    // Centraliza e escala o coração responsivamente no centro da viewport
+    ctx.save();
+    ctx.translate(screenW / 2, screenH / 2);
+    ctx.scale(fitScale, fitScale);
+    ctx.translate(-400, -400);
 
     // 1. Desenha itens já assentados (settled)
     for (let i = 0; i < settledItems.length; i++) {
@@ -471,6 +830,13 @@ function startHeart(theme) {
     }
     activeItems = remainingActive;
 
+    ctx.restore();
+
+    // Spidey pendurado de cabeça para baixo no canto da viewport
+    if (currentTheme && currentTheme.id === "cherry") {
+      drawHangingSpidey(ctx, now);
+    }
+
     // Se terminou o spawn e todos assentaram, ativa o shimmer
     if (!spawning && activeItems.length === 0 && !shimmerTimer) {
       startShimmer();
@@ -506,6 +872,15 @@ btnBack.addEventListener("click", () => {
   shimmerTimer = null;
   heartScreen.classList.add("hidden");
   menuScreen.classList.remove("hidden");
+});
+
+// Disparo de teia ao clicar no canvas (interativo para Mary Jane)
+canvas.addEventListener("click", (e) => {
+  if (!currentTheme || currentTheme.id !== "cherry") return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  createWebBurst(x, y);
 });
 
 // Teclas de atalho 1 a 6
