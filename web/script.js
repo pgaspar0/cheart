@@ -318,6 +318,99 @@ const canvas = document.getElementById("heartCanvas");
 const ctx = canvas.getContext("2d");
 const btnBack = document.getElementById("btn-back");
 
+// Elementos do Leitor de Áudio (Cherry Spider-Man)
+const cherryAudioPlayer = document.getElementById("cherry-audio-player");
+const spidermanAudio = document.getElementById("spiderman-audio");
+const audioPlayBtn = document.getElementById("audio-play-btn");
+const playIcon = document.getElementById("play-icon");
+const audioProgressWrap = document.getElementById("audio-progress-wrap");
+const audioProgressBar = document.getElementById("audio-progress-bar");
+const audioTime = document.getElementById("audio-time");
+const audioLoopBtn = document.getElementById("audio-loop-btn");
+
+let isAudioLooping = false;
+
+function formatAudioTime(sec) {
+  if (isNaN(sec) || !isFinite(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+
+function updatePlayButtonUI(isPlaying) {
+  if (!playIcon || !cherryAudioPlayer) return;
+  if (isPlaying) {
+    playIcon.textContent = "❚❚";
+    audioPlayBtn.title = "Pausar som";
+    cherryAudioPlayer.classList.add("playing");
+  } else {
+    playIcon.textContent = "▶";
+    audioPlayBtn.title = "Reproduzir som";
+    cherryAudioPlayer.classList.remove("playing");
+  }
+}
+
+function stopAndResetAudio() {
+  if (!spidermanAudio) return;
+  spidermanAudio.pause();
+  spidermanAudio.currentTime = 0;
+  if (audioProgressBar) audioProgressBar.style.width = "0%";
+  if (audioTime) audioTime.textContent = "0:00";
+  updatePlayButtonUI(false);
+}
+
+if (spidermanAudio && audioPlayBtn) {
+  audioPlayBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (spidermanAudio.paused) {
+      spidermanAudio.play().then(() => updatePlayButtonUI(true)).catch(() => {});
+    } else {
+      spidermanAudio.pause();
+      updatePlayButtonUI(false);
+    }
+  });
+
+  if (audioLoopBtn) {
+    audioLoopBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      isAudioLooping = !isAudioLooping;
+      spidermanAudio.loop = isAudioLooping;
+      audioLoopBtn.classList.toggle("active", isAudioLooping);
+      audioLoopBtn.title = isAudioLooping ? "Repetir em loop: ativado" : "Repetir em loop: desativado";
+    });
+  }
+
+  if (audioProgressWrap) {
+    audioProgressWrap.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const rect = audioProgressWrap.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, clickX / rect.width));
+      if (spidermanAudio.duration) {
+        spidermanAudio.currentTime = pct * spidermanAudio.duration;
+        if (spidermanAudio.paused) {
+          spidermanAudio.play().then(() => updatePlayButtonUI(true)).catch(() => {});
+        }
+      }
+    });
+  }
+
+  spidermanAudio.addEventListener("timeupdate", () => {
+    if (!spidermanAudio.duration) return;
+    const pct = (spidermanAudio.currentTime / spidermanAudio.duration) * 100;
+    if (audioProgressBar) audioProgressBar.style.width = pct + "%";
+    if (audioTime) audioTime.textContent = formatAudioTime(spidermanAudio.currentTime);
+  });
+
+  spidermanAudio.addEventListener("ended", () => {
+    if (!isAudioLooping) {
+      updatePlayButtonUI(false);
+      if (audioProgressBar) audioProgressBar.style.width = "0%";
+      if (audioTime) audioTime.textContent = "0:00";
+    }
+  });
+}
+
 // Dimensões responsivas e suporte a monitores High-DPI / Retina
 let screenW = window.innerWidth;
 let screenH = window.innerHeight;
@@ -685,6 +778,16 @@ function startHeart(theme) {
   if (theme.id === "cherry") {
     initWebParticles();
     webBursts = [];
+    if (cherryAudioPlayer && spidermanAudio) {
+      cherryAudioPlayer.classList.remove("hidden");
+      spidermanAudio.currentTime = 0;
+      spidermanAudio.play()
+        .then(() => updatePlayButtonUI(true))
+        .catch(() => updatePlayButtonUI(false));
+    }
+  } else {
+    stopAndResetAudio();
+    if (cherryAudioPlayer) cherryAudioPlayer.classList.add("hidden");
   }
 
   // Atualiza créditos no canto da tela
@@ -870,6 +973,8 @@ btnBack.addEventListener("click", () => {
   if (animId) cancelAnimationFrame(animId);
   if (shimmerTimer) clearInterval(shimmerTimer);
   shimmerTimer = null;
+  stopAndResetAudio();
+  if (cherryAudioPlayer) cherryAudioPlayer.classList.add("hidden");
   heartScreen.classList.add("hidden");
   menuScreen.classList.remove("hidden");
 });
@@ -881,6 +986,16 @@ canvas.addEventListener("click", (e) => {
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   createWebBurst(x, y);
+
+  // Easter Egg: clicar no Homem-Aranha pendurado toca/reinicia o som!
+  const offsetFromRight = Math.min(110, Math.max(60, screenW * 0.075));
+  const spideyX = screenW - offsetFromRight;
+  const threadLength = Math.min(85, Math.max(52, screenH * 0.08));
+  const spideyY = threadLength + 18;
+  if (Math.hypot(x - spideyX, y - spideyY) < 38 && spidermanAudio) {
+    spidermanAudio.currentTime = 0;
+    spidermanAudio.play().then(() => updatePlayButtonUI(true)).catch(() => {});
+  }
 });
 
 // Teclas de atalho 1 a 6

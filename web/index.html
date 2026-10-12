@@ -31,7 +31,29 @@
     <!-- Tela do Coração Animado -->
     <div id="heart-screen" class="screen hidden">
       <canvas id="heartCanvas"></canvas>
-      <button id="btn-back" class="btn-back" title="Escolher outra cor">← Trocar Cor</button>
+      <!-- Barra Superior com Botão Voltar e Leitor de Áudio (Cherry) -->
+      <div class="top-bar">
+        <button id="btn-back" class="btn-back" title="Escolher outra cor">← Trocar Cor</button>
+        <div id="cherry-audio-player" class="cherry-audio-player hidden">
+          <audio id="spiderman-audio" src="spiderman-sound-effect.mp3" preload="auto"></audio>
+          <button id="audio-play-btn" class="audio-btn" title="Reproduzir som">
+            <span id="play-icon">▶</span>
+          </button>
+          <div class="audio-info">
+            <div class="audio-title">
+              <span class="audio-spider-icon">🕷️</span>
+              <span class="audio-label">Spider-Sound</span>
+            </div>
+            <div class="audio-progress-wrap" id="audio-progress-wrap" title="Avançar / Retroceder">
+              <div class="audio-progress-bar" id="audio-progress-bar"></div>
+            </div>
+          </div>
+          <span class="audio-time" id="audio-time">0:00</span>
+          <button id="audio-loop-btn" class="audio-btn audio-btn-loop" title="Repetir em loop">
+            <span>🔁</span>
+          </button>
+        </div>
+      </div>
       <div class="heart-credit">
         <div>Motivação, Célia T.</div>
         <div class="fun-credit">Consegui ahahahahahaha!</div>
