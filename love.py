@@ -493,11 +493,16 @@ def show_menu():
         font=(FONT, 10, "italic"), fill="#5D5469"
     )
     credit_txt = cv.create_text(
-        0, 275,
+        0, 273,
         text="Motivação, Célia T.",
         font=(FONT, 9, "italic"), fill="#382C42"
     )
-    menu_items.extend([tip_txt, credit_txt])
+    consegui_txt = cv.create_text(
+        0, 290,
+        text="Consegui ahahahahahaha!",
+        font=(FONT, 8, "italic"), fill="#2A1F33"
+    )
+    menu_items.extend([tip_txt, credit_txt, consegui_txt])
 
 
 def setup_bindings():
@@ -527,6 +532,7 @@ def print_cli_menu():
     print("=" * 55)
     print("Selecione clicando na janela ou digitando 1-6.")
     print("Motivação, Célia T.")
+    print("Consegui ahahahahahaha!")
     print("=" * 55)
 
 

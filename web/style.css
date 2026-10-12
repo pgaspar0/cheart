@@ -216,14 +216,29 @@ body {
   color: #7b678e;
 }
 
+.fun-credit {
+  font-size: 9.5px;
+  font-style: italic;
+  color: #3b2f46;
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.discreet-credit:hover .fun-credit {
+  color: #69577b;
+}
+
 .heart-credit {
   position: absolute;
   bottom: 14px;
   right: 18px;
-  font-size: 10px;
+  font-size: 9.5px;
   font-style: italic;
   color: rgba(255, 255, 255, 0.22);
   letter-spacing: 0.3px;
+  text-align: right;
+  line-height: 1.4;
   user-select: none;
   pointer-events: none;
   z-index: 10;
